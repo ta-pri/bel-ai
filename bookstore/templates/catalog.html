@@ -1,0 +1,564 @@
+{% extends 'base.html' %}
+{% block title %}Каталог — КниГа{% endblock %}
+ 
+{% block extra_styles %}
+<style>
+.catalog-hero {
+    background: var(--dark);
+    padding: 50px 60px;
+    border-bottom: 2px solid var(--gold);
+}
+.catalog-hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.8rem;
+    color: var(--white);
+    margin-bottom: 8px;
+}
+.catalog-hero p { color: #A89A8A; font-size: 0.95rem; }
+ 
+.catalog-layout {
+    display: flex;
+    gap: 0;
+    min-height: 80vh;
+}
+ 
+/* ── SIDEBAR ── */
+.sidebar {
+    width: 280px;
+    min-width: 280px;
+    background: var(--white);
+    border-right: 1px solid var(--border);
+    padding: 30px 24px;
+    position: sticky;
+    top: 62px;
+    height: calc(100vh - 62px);
+    overflow-y: auto;
+}
+ 
+.sidebar::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+ 
+.sidebar h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    margin-bottom: 22px;
+    color: var(--dark);
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+}
+ 
+.filter-section { margin-bottom: 24px; }
+ 
+.filter-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    display: block;
+}
+ 
+.filter-input {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    font-family: 'Mulish', sans-serif;
+    font-size: 0.88rem;
+    background: var(--cream);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+}
+.filter-input:focus { border-color: var(--gold); background: var(--white); }
+ 
+.range-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+ 
+.checkbox-group { display: flex; flex-direction: column; gap: 8px; }
+ 
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 0.87rem;
+    color: var(--text);
+}
+ 
+.checkbox-item input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--gold);
+    cursor: pointer;
+}
+ 
+.sidebar-btn {
+    width: 100%;
+    padding: 11px;
+    border: none;
+    border-radius: 6px;
+    font-family: 'Mulish', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    margin-top: 6px;
+    transition: all 0.2s;
+}
+ 
+.sidebar-btn-apply { background: var(--gold); color: var(--dark); }
+.sidebar-btn-apply:hover { background: var(--gold-light); }
+.sidebar-btn-reset { background: var(--cream); color: var(--text-muted); border: 1px solid var(--border); }
+.sidebar-btn-reset:hover { background: var(--border); }
+ 
+/* ── MAIN CONTENT ── */
+.catalog-main {
+    flex: 1;
+    padding: 30px 40px;
+    background: var(--cream);
+}
+ 
+.catalog-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+ 
+.results-count {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+}
+ 
+.results-count strong {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    color: var(--dark);
+    font-weight: 700;
+}
+ 
+.sort-select {
+    padding: 9px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    font-family: 'Mulish', sans-serif;
+    font-size: 0.85rem;
+    background: var(--white);
+    color: var(--text);
+    cursor: pointer;
+    outline: none;
+}
+.sort-select:focus { border-color: var(--gold); }
+ 
+.active-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+ 
+.filter-tag {
+    background: var(--dark);
+    color: var(--white);
+    font-size: 0.75rem;
+    padding: 4px 12px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+ 
+.filter-tag button {
+    background: none;
+    border: none;
+    color: var(--gold);
+    cursor: pointer;
+    font-size: 0.9rem;
+    line-height: 1;
+    padding: 0;
+}
+ 
+/* ── GRID ── */
+.books-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 24px;
+}
+ 
+.book-card {
+    background: var(--white);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+}
+.book-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 16px 40px rgba(107,76,42,0.15);
+    border-color: var(--gold);
+}
+.book-img-wrap {
+    position: relative;
+    aspect-ratio: 2/3;
+    overflow: hidden;
+    background: var(--cream);
+}
+.book-img-wrap img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+.book-card:hover .book-img-wrap img { transform: scale(1.04); }
+.book-badges {
+    position: absolute; top: 10px; left: 10px;
+    display: flex; flex-direction: column; gap: 4px;
+}
+.book-card-body { padding: 14px; }
+.book-card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.93rem; font-weight: 600;
+    color: var(--dark); margin-bottom: 4px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden; line-height: 1.3;
+}
+.book-card-author { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 10px; }
+.book-card-price { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.price-current { font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 700; color: var(--warm-brown); }
+.price-old { font-size: 0.78rem; color: var(--text-muted); text-decoration: line-through; }
+.book-card-btn {
+    width: 100%; padding: 8px;
+    background: var(--dark); color: var(--white);
+    border: none; border-radius: 6px;
+    font-family: 'Mulish', sans-serif;
+    font-size: 0.75rem; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    cursor: pointer; transition: all 0.2s;
+}
+.book-card-btn:hover { background: var(--gold); color: var(--dark); }
+ 
+/* ── SKELETON ── */
+.skeleton { background: linear-gradient(90deg, #E8DDD0 25%, #F0E8DD 50%, #E8DDD0 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 6px; }
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+ 
+/* ── PAGINATION ── */
+.pagination {
+    display: flex; justify-content: center;
+    align-items: center; gap: 8px;
+    margin-top: 50px; padding-bottom: 20px;
+}
+.page-btn {
+    width: 40px; height: 40px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px; background: var(--white);
+    color: var(--text); font-family: 'Mulish', sans-serif;
+    font-size: 0.9rem; cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
+}
+.page-btn:hover { border-color: var(--gold); color: var(--gold); }
+.page-btn.active { background: var(--dark); color: var(--white); border-color: var(--dark); }
+.page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.page-arrow { font-size: 1.1rem; }
+ 
+/* ── EMPTY ── */
+.empty-state {
+    text-align: center; padding: 80px 20px;
+    grid-column: 1 / -1;
+}
+.empty-state .empty-icon { font-size: 4rem; margin-bottom: 16px; opacity: 0.4; }
+.empty-state h3 { font-family: 'Playfair Display', serif; font-size: 1.4rem; margin-bottom: 8px; color: var(--dark); }
+.empty-state p { color: var(--text-muted); font-size: 0.9rem; }
+</style>
+{% endblock %}
+ 
+{% block content %}
+<div class="catalog-hero">
+    <h1>Каталог книг</h1>
+    <p>Найдите идеальную книгу из нашей коллекции</p>
+</div>
+ 
+<div class="catalog-layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <h3>Фильтры</h3>
+ 
+        <div class="filter-section">
+            <span class="filter-label">Поиск</span>
+            <input type="text" class="filter-input" id="f-title" placeholder="Название книги...">
+        </div>
+ 
+        <div class="filter-section">
+            <span class="filter-label">Автор</span>
+            <input type="text" class="filter-input" id="f-author" placeholder="Имя автора...">
+        </div>
+ 
+        <div class="filter-section">
+            <span class="filter-label">Издательство</span>
+            <input type="text" class="filter-input" id="f-publisher" placeholder="Название издательства...">
+        </div>
+ 
+        <div class="filter-section">
+            <span class="filter-label">Жанр</span>
+            <select class="filter-input" id="f-genre">
+                <option value="">Все жанры</option>
+            </select>
+        </div>
+ 
+        <div class="filter-section">
+            <span class="filter-label">Цена, ₽</span>
+            <div class="range-row">
+                <input type="number" class="filter-input" id="f-min-price" placeholder="От">
+                <input type="number" class="filter-input" id="f-max-price" placeholder="До">
+            </div>
+        </div>
+ 
+        <div class="filter-section">
+            <span class="filter-label">Страниц</span>
+            <div class="range-row">
+                <input type="number" class="filter-input" id="f-min-pages" placeholder="От">
+                <input type="number" class="filter-input" id="f-max-pages" placeholder="До">
+            </div>
+        </div>
+ 
+        <div class="filter-section">
+            <span class="filter-label">Категории</span>
+            <div class="checkbox-group">
+                <label class="checkbox-item">
+                    <input type="checkbox" id="f-new"> Новинки
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" id="f-sale"> Со скидкой
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" id="f-seasonal"> Сезонная подборка
+                </label>
+            </div>
+        </div>
+ 
+        <button class="sidebar-btn sidebar-btn-apply" onclick="applyFilters()">Применить</button>
+        <button class="sidebar-btn sidebar-btn-reset" onclick="resetFilters()">Сбросить всё</button>
+    </aside>
+ 
+    <!-- MAIN -->
+    <div class="catalog-main">
+        <div class="catalog-toolbar">
+            <div class="results-count">
+                Найдено: <strong id="total-count">...</strong> книг
+            </div>
+            <select class="sort-select" id="sort-by" onchange="applyFilters()">
+                <option value="created_at">Сначала новые</option>
+                <option value="price">По цене ↑</option>
+                <option value="price_desc">По цене ↓</option>
+                <option value="title">По названию А–Я</option>
+                <option value="author">По автору</option>
+                <option value="pages">По объёму</option>
+            </select>
+        </div>
+ 
+        <div class="active-filters" id="active-filters"></div>
+ 
+        <div class="books-grid" id="books-container">
+            <!-- skeleton -->
+            {% for i in range(8) %}
+            <div class="book-card">
+                <div class="book-img-wrap skeleton" style="aspect-ratio:2/3"></div>
+                <div class="book-card-body">
+                    <div class="skeleton" style="height:16px; margin-bottom:8px; border-radius:4px;"></div>
+                    <div class="skeleton" style="height:12px; width:60%; border-radius:4px;"></div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+ 
+        <div class="pagination" id="pagination"></div>
+    </div>
+</div>
+{% endblock %}
+ 
+{% block extra_scripts %}
+<script>
+let currentPage = 1;
+let currentFilters = {};
+ 
+// Read URL params on load
+window.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('is_new') === 'true') document.getElementById('f-new').checked = true;
+    if (params.get('is_sale') === 'true') document.getElementById('f-sale').checked = true;
+    if (params.get('is_seasonal') === 'true') document.getElementById('f-seasonal').checked = true;
+    
+    loadGenres();
+    loadBooks();
+});
+ 
+async function loadGenres() {
+    const res = await fetch('/api/genres');
+    const genres = await res.json();
+    const sel = document.getElementById('f-genre');
+    genres.forEach(g => {
+        const opt = document.createElement('option');
+        opt.value = g; opt.textContent = g;
+        sel.appendChild(opt);
+    });
+}
+ 
+function getFilters() {
+    const sortVal = document.getElementById('sort-by').value;
+    let sort_by = sortVal, sort_dir = 'asc';
+    if (sortVal === 'created_at') { sort_by = 'created_at'; sort_dir = 'desc'; }
+    else if (sortVal === 'price_desc') { sort_by = 'price'; sort_dir = 'desc'; }
+ 
+    return {
+        title: document.getElementById('f-title').value,
+        author: document.getElementById('f-author').value,
+        publisher: document.getElementById('f-publisher').value,
+        genre: document.getElementById('f-genre').value,
+        min_price: document.getElementById('f-min-price').value,
+        max_price: document.getElementById('f-max-price').value,
+        min_pages: document.getElementById('f-min-pages').value,
+        max_pages: document.getElementById('f-max-pages').value,
+        is_new: document.getElementById('f-new').checked ? 'true' : '',
+        is_sale: document.getElementById('f-sale').checked ? 'true' : '',
+        is_seasonal: document.getElementById('f-seasonal').checked ? 'true' : '',
+        sort_by, sort_dir,
+    };
+}
+ 
+function applyFilters() {
+    currentPage = 1;
+    currentFilters = getFilters();
+    loadBooks();
+    updateActiveTags();
+}
+ 
+function resetFilters() {
+    document.getElementById('f-title').value = '';
+    document.getElementById('f-author').value = '';
+    document.getElementById('f-publisher').value = '';
+    document.getElementById('f-genre').value = '';
+    document.getElementById('f-min-price').value = '';
+    document.getElementById('f-max-price').value = '';
+    document.getElementById('f-min-pages').value = '';
+    document.getElementById('f-max-pages').value = '';
+    document.getElementById('f-new').checked = false;
+    document.getElementById('f-sale').checked = false;
+    document.getElementById('f-seasonal').checked = false;
+    applyFilters();
+}
+ 
+function updateActiveTags() {
+    const cont = document.getElementById('active-filters');
+    cont.innerHTML = '';
+    const f = currentFilters;
+    const add = (label, key) => {
+        const tag = document.createElement('div');
+        tag.className = 'filter-tag';
+        tag.innerHTML = `${label} <button onclick="clearFilter('${key}')">✕</button>`;
+        cont.appendChild(tag);
+    };
+    if (f.title) add(`Название: ${f.title}`, 'title');
+    if (f.author) add(`Автор: ${f.author}`, 'author');
+    if (f.genre) add(`Жанр: ${f.genre}`, 'genre');
+    if (f.is_new === 'true') add('Новинки', 'is_new');
+    if (f.is_sale === 'true') add('Скидки', 'is_sale');
+    if (f.is_seasonal === 'true') add('Подборка', 'is_seasonal');
+}
+ 
+function clearFilter(key) {
+    if (key === 'title') document.getElementById('f-title').value = '';
+    if (key === 'author') document.getElementById('f-author').value = '';
+    if (key === 'genre') document.getElementById('f-genre').value = '';
+    if (key === 'is_new') document.getElementById('f-new').checked = false;
+    if (key === 'is_sale') document.getElementById('f-sale').checked = false;
+    if (key === 'is_seasonal') document.getElementById('f-seasonal').checked = false;
+    applyFilters();
+}
+ 
+async function loadBooks() {
+    const f = currentFilters = getFilters();
+    const params = new URLSearchParams({ page: currentPage, limit: 24, ...f });
+    Object.keys(f).forEach(k => { if (!f[k]) params.delete(k); });
+ 
+    const res = await fetch(`/api/books?${params}`);
+    const data = await res.json();
+ 
+    document.getElementById('total-count').textContent = data.total;
+ 
+    const container = document.getElementById('books-container');
+    container.innerHTML = '';
+ 
+    if (!data.books.length) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">📚</div>
+                <h3>Книги не найдены</h3>
+                <p>Попробуйте изменить параметры поиска</p>
+            </div>`;
+        document.getElementById('pagination').innerHTML = '';
+        return;
+    }
+ 
+    data.books.forEach(book => {
+        const salePrice = book.is_sale ? Math.round(book.price * (100 - book.sale_percent) / 100) : null;
+        const card = document.createElement('div');
+        card.className = 'book-card';
+        card.onclick = () => location.href = `/book/${book.id}`;
+        card.innerHTML = `
+            <div class="book-img-wrap">
+                <img src="${book.cover_url}" alt="${book.title}" onerror="this.src='/static/img/book_placeholder.jpg'">
+                <div class="book-badges">
+                    ${book.is_new ? '<span class="badge badge-new">Новинка</span>' : ''}
+                    ${book.is_sale ? `<span class="badge badge-sale">−${book.sale_percent}%</span>` : ''}
+                    ${book.is_seasonal && !book.is_new && !book.is_sale ? '<span class="badge badge-seasonal">Подборка</span>' : ''}
+                </div>
+            </div>
+            <div class="book-card-body">
+                <div class="book-card-title">${book.title}</div>
+                <div class="book-card-author">${book.author}</div>
+                <div class="book-card-price">
+                    <span class="price-current">${salePrice ?? book.price} ₽</span>
+                    ${book.is_sale ? `<span class="price-old">${book.price} ₽</span>` : ''}
+                </div>
+                <button class="book-card-btn" onclick="event.stopPropagation(); openModal('${book.id}', \`${book.title.replace(/`/g, '')}\`)">Заказать</button>
+            </div>`;
+        container.appendChild(card);
+    });
+ 
+    renderPagination(data.page, data.pages_total);
+}
+ 
+function renderPagination(page, total) {
+    const pag = document.getElementById('pagination');
+    pag.innerHTML = '';
+    if (total <= 1) return;
+ 
+    const addBtn = (label, pg, active = false, disabled = false) => {
+        const btn = document.createElement('button');
+        btn.className = 'page-btn' + (active ? ' active' : '');
+        btn.innerHTML = label;
+        btn.disabled = disabled;
+        btn.onclick = () => { currentPage = pg; loadBooks(); window.scrollTo({top:0, behavior:'smooth'}); };
+        pag.appendChild(btn);
+    };
+ 
+    addBtn('←', page - 1, false, page === 1);
+    let start = Math.max(1, page - 2), end = Math.min(total, page + 2);
+    if (start > 1) { addBtn('1', 1); if (start > 2) pag.appendChild(Object.assign(document.createElement('span'), {textContent: '…', style: 'padding: 0 6px; color: var(--text-muted);'})); }
+    for (let i = start; i <= end; i++) addBtn(i, i, i === page);
+    if (end < total) { pag.appendChild(Object.assign(document.createElement('span'), {textContent: '…', style: 'padding: 0 6px; color: var(--text-muted);'})); addBtn(total, total); }
+    addBtn('→', page + 1, false, page === total);
+}
+ 
+// Enter key support
+document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && (e.target.classList.contains('filter-input'))) applyFilters();
+});
+</script>
+{% endblock %}

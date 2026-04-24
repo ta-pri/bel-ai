@@ -1,0 +1,364 @@
+{% extends 'base.html' %}
+{% block title %}Панель администратора — КниГа{% endblock %}
+ 
+{% block extra_styles %}
+<style>
+.admin-header {
+    background: var(--dark);
+    padding: 30px 50px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid var(--gold);
+}
+ 
+.admin-header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    color: var(--white);
+}
+ 
+.admin-header-meta { font-size: 0.82rem; color: #A89A8A; margin-top: 4px; }
+ 
+.admin-actions { display: flex; gap: 12px; align-items: center; }
+ 
+.admin-layout {
+    display: flex;
+    min-height: calc(100vh - 160px);
+}
+ 
+/* ── NAV SIDEBAR ── */
+.admin-nav {
+    width: 220px;
+    background: var(--white);
+    border-right: 1px solid var(--border);
+    padding: 24px 0;
+}
+ 
+.admin-nav a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 24px;
+    color: var(--text);
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    border-left: 3px solid transparent;
+}
+ 
+.admin-nav a:hover {
+    background: var(--cream);
+    color: var(--warm-brown);
+    border-left-color: var(--gold);
+}
+ 
+.admin-nav a.active {
+    background: var(--cream);
+    color: var(--warm-brown);
+    border-left-color: var(--gold);
+    font-weight: 700;
+}
+ 
+.admin-nav .nav-icon { font-size: 1rem; }
+ 
+/* ── CONTENT ── */
+.admin-content { flex: 1; padding: 30px 40px; background: var(--cream); }
+ 
+/* ── TOOLBAR ── */
+.content-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+ 
+.search-box {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex: 1;
+    max-width: 400px;
+}
+ 
+.search-box input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-family: 'Mulish', sans-serif;
+    font-size: 0.88rem;
+    background: var(--white);
+    outline: none;
+    transition: border-color 0.2s;
+}
+ 
+.search-box input:focus { border-color: var(--gold); }
+ 
+.search-box button {
+    padding: 10px 16px;
+    background: var(--dark);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+}
+.search-box button:hover { background: var(--warm-brown); }
+ 
+/* ── TABLE ── */
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--white);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(107,76,42,0.07);
+    border: 1px solid var(--border);
+}
+ 
+.admin-table thead {
+    background: var(--dark);
+}
+ 
+.admin-table th {
+    padding: 14px 16px;
+    text-align: left;
+    color: #C8BFB0;
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+ 
+.admin-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.88rem;
+    vertical-align: middle;
+}
+ 
+.admin-table tbody tr:last-child td { border-bottom: none; }
+.admin-table tbody tr:hover { background: var(--cream); }
+ 
+.book-thumb {
+    width: 44px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+}
+ 
+.book-title-cell strong {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--dark);
+    margin-bottom: 2px;
+}
+ 
+.book-title-cell span {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+ 
+.tag-cell { display: flex; flex-wrap: wrap; gap: 4px; }
+ 
+.table-actions { display: flex; gap: 8px; align-items: center; }
+ 
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 0.76rem;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    font-family: 'Mulish', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: all 0.2s;
+    display: inline-block;
+}
+ 
+.btn-edit { background: rgba(201,153,74,0.15); color: var(--warm-brown); }
+.btn-edit:hover { background: var(--gold); color: var(--dark); }
+.btn-del { background: rgba(192,57,43,0.1); color: #C0392B; }
+.btn-del:hover { background: #C0392B; color: white; }
+ 
+/* ── STATS ── */
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+}
+ 
+.stat-card {
+    background: var(--white);
+    border-radius: 10px;
+    padding: 20px 22px;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+ 
+.stat-icon {
+    width: 46px; height: 46px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+}
+ 
+.stat-icon-books { background: rgba(201,153,74,0.15); }
+.stat-icon-new { background: rgba(122,140,110,0.15); }
+.stat-icon-sale { background: rgba(196,133,106,0.15); }
+.stat-icon-req { background: rgba(107,76,42,0.12); }
+ 
+.stat-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--dark);
+    line-height: 1;
+}
+ 
+.stat-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 3px;
+}
+</style>
+{% endblock %}
+ 
+{% block content %}
+<div class="admin-header">
+    <div>
+        <h1>Панель управления</h1>
+        <div class="admin-header-meta">Книжный магазин «КниГа» · Администратор</div>
+    </div>
+    <div class="admin-actions">
+        <a href="/admin/init" class="btn btn-outline" style="font-size:0.78rem; padding:8px 16px;"
+           onclick="return confirm('Сбросить базу и загрузить тестовые данные?')">↺ Инициализировать БД</a>
+        <a href="/" class="btn btn-outline" style="font-size:0.78rem; padding:8px 16px;" target="_blank">↗ Магазин</a>
+        <a href="/logout" class="btn btn-danger" style="font-size:0.78rem; padding:8px 16px;">Выйти</a>
+    </div>
+</div>
+ 
+<div class="admin-layout">
+    <!-- NAV -->
+    <nav class="admin-nav">
+        <a href="/admin" class="active"><span class="nav-icon">📚</span> Книги</a>
+        <a href="/admin/add"><span class="nav-icon">➕</span> Добавить</a>
+        <a href="/admin/requests"><span class="nav-icon">📩</span> Заявки {% if unread > 0 %}<span class="nav-badge">{{ unread }}</span>{% endif %}</a>
+    </nav>
+ 
+    <!-- CONTENT -->
+    <div class="admin-content">
+        <!-- STATS -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-icon stat-icon-books">📚</div>
+                <div>
+                    <div class="stat-value">{{ books|length }}</div>
+                    <div class="stat-label">Всего книг</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon stat-icon-new">✨</div>
+                <div>
+                    <div class="stat-value">{{ books | selectattr('is_new') | list | length }}</div>
+                    <div class="stat-label">Новинок</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon stat-icon-sale">🏷️</div>
+                <div>
+                    <div class="stat-value">{{ books | selectattr('is_sale') | list | length }}</div>
+                    <div class="stat-label">На акции</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon stat-icon-req">📩</div>
+                <div>
+                    <div class="stat-value">{{ unread }}</div>
+                    <div class="stat-label">Новых заявок</div>
+                </div>
+            </div>
+        </div>
+ 
+        <!-- TOOLBAR -->
+        <div class="content-toolbar">
+            <form class="search-box" method="GET" action="/admin">
+                <input type="text" name="q" value="{{ search }}" placeholder="Поиск по названию или автору...">
+                <button type="submit">Найти</button>
+                {% if search %}<a href="/admin" style="font-size:0.82rem; color:var(--text-muted); white-space:nowrap;">× Сбросить</a>{% endif %}
+            </form>
+            <a href="/admin/add" class="btn btn-primary" style="white-space:nowrap;">+ Добавить книгу</a>
+        </div>
+ 
+        <!-- TABLE -->
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th style="width:50px;">ID</th>
+                    <th style="width:60px;">Обложка</th>
+                    <th>Книга</th>
+                    <th style="width:100px;">Цена</th>
+                    <th style="width:140px;">Метки</th>
+                    <th style="width:150px;">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for book in books %}
+                <tr>
+                    <td style="color:var(--text-muted); font-size:0.8rem;">#{{ book.id }}</td>
+                    <td>
+                        <img class="book-thumb" src="{{ book.cover_url }}" alt=""
+                             onerror="this.src='/static/img/book_placeholder.jpg'">
+                    </td>
+                    <td>
+                        <div class="book-title-cell">
+                            <strong>{{ book.title }}</strong>
+                            <span>{{ book.author }} · {{ book.publisher }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <strong style="font-family:'Playfair Display',serif; color:var(--warm-brown);">{{ book.price | int }} ₽</strong>
+                        {% if book.is_sale %}<br><small style="color:var(--dusty-rose);">−{{ book.sale_percent }}%</small>{% endif %}
+                    </td>
+                    <td>
+                        <div class="tag-cell">
+                            {% if book.is_new %}<span class="badge badge-new">NEW</span>{% endif %}
+                            {% if book.is_sale %}<span class="badge badge-sale">SALE</span>{% endif %}
+                            {% if book.is_seasonal %}<span class="badge badge-seasonal">СЕЗОН</span>{% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="table-actions">
+                            <a href="/admin/edit/{{ book.id }}" class="btn-sm btn-edit">Изменить</a>
+                            <form method="POST" action="/admin/delete/{{ book.id }}" style="margin:0;"
+                                  onsubmit="return confirm('Удалить книгу «{{ book.title }}»?')">
+                                <button type="submit" class="btn-sm btn-del">Удалить</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" style="text-align:center; padding:60px; color:var(--text-muted);">
+                        <div style="font-family:'Playfair Display',serif; font-size:1.2rem; margin-bottom:8px;">Книги не найдены</div>
+                        <div style="font-size:0.85rem;">Попробуйте другой запрос или <a href="/admin/add" style="color:var(--gold);">добавьте книгу</a></div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+ 

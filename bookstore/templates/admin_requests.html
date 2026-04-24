@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+{% block title %}Заявки — КниГа{% endblock %}
+ 
+{% block extra_styles %}
+<style>
+.admin-header {
+    background: var(--dark);
+    padding: 30px 50px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 2px solid var(--gold);
+}
+.admin-header h1 { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: var(--white); }
+ 
+.admin-layout { display: flex; min-height: calc(100vh - 160px); }
+ 
+.admin-nav {
+    width: 220px; background: var(--white);
+    border-right: 1px solid var(--border); padding: 24px 0;
+}
+.admin-nav a {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 24px; color: var(--text); text-decoration: none;
+    font-size: 0.88rem; font-weight: 500; transition: all 0.2s;
+    border-left: 3px solid transparent;
+}
+.admin-nav a:hover, .admin-nav a.active {
+    background: var(--cream); color: var(--warm-brown); border-left-color: var(--gold); font-weight: 700;
+}
+ 
+.requests-content { flex: 1; padding: 32px 40px; background: var(--cream); }
+ 
+.requests-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem; color: var(--dark); margin-bottom: 24px;
+}
+ 
+.requests-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 18px;
+}
+ 
+.req-card {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 22px;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 8px rgba(107,76,42,0.06);
+    transition: all 0.2s;
+}
+.req-card:hover { box-shadow: 0 6px 20px rgba(107,76,42,0.12); }
+ 
+.req-card-head {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 14px;
+}
+ 
+.req-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.05rem; font-weight: 600; color: var(--dark);
+}
+ 
+.req-date {
+    font-size: 0.75rem; color: var(--text-muted);
+    white-space: nowrap; margin-left: 8px; padding-top: 2px;
+}
+ 
+.req-field {
+    display: flex; align-items: flex-start; gap: 10px;
+    font-size: 0.85rem; margin-bottom: 8px; color: var(--text);
+}
+ 
+.req-field-icon { font-size: 0.9rem; flex-shrink: 0; margin-top: 1px; }
+.req-field-label { color: var(--text-muted); font-size: 0.78rem; margin-right: 4px; }
+ 
+.req-book-tag {
+    display: inline-block;
+    background: rgba(201,153,74,0.12);
+    color: var(--warm-brown);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    margin-top: 10px;
+}
+ 
+.req-message {
+    margin-top: 14px;
+    padding: 12px 14px;
+    background: var(--cream);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: var(--text);
+    font-style: italic;
+    border-left: 3px solid var(--border);
+}
+ 
+.empty-requests {
+    text-align: center; padding: 80px 20px;
+    color: var(--text-muted);
+}
+.empty-requests .empty-icon { font-size: 4rem; margin-bottom: 16px; opacity: 0.4; }
+.empty-requests h3 { font-family: 'Playfair Display', serif; font-size: 1.4rem; margin-bottom: 8px; color: var(--dark); }
+</style>
+{% endblock %}
+ 
+{% block content %}
+<div class="admin-header">
+    <div>
+        <h1>Заявки от клиентов</h1>
+    </div>
+    <a href="/admin" class="btn btn-outline" style="font-size:0.8rem; padding:8px 18px;">← Назад</a>
+</div>
+ 
+<div class="admin-layout">
+    <nav class="admin-nav">
+        <a href="/admin"><span>📚</span> Книги</a>
+        <a href="/admin/add"><span>➕</span> Добавить</a>
+        <a href="/admin/requests" class="active"><span>📩</span> Заявки</a>
+    </nav>
+ 
+    <div class="requests-content">
+        <div class="requests-title">Всего заявок: {{ requests|length }}</div>
+ 
+        {% if requests %}
+        <div class="requests-grid">
+            {% for req in requests %}
+            <div class="req-card">
+                <div class="req-card-head">
+                    <div class="req-name">{{ req.name }}</div>
+                    <div class="req-date">{{ req.created_at.strftime('%d.%m.%Y %H:%M') }}</div>
+                </div>
+ 
+                <div class="req-field">
+                    <span class="req-field-icon">📞</span>
+                    <div>
+                        <span class="req-field-label">Телефон:</span>
+                        <a href="tel:{{ req.phone }}" style="color:var(--warm-brown); font-weight:600; text-decoration:none;">{{ req.phone }}</a>
+                    </div>
+                </div>
+ 
+                {% if req.email %}
+                <div class="req-field">
+                    <span class="req-field-icon">✉️</span>
+                    <div>
+                        <span class="req-field-label">Email:</span>
+                        <a href="mailto:{{ req.email }}" style="color:var(--warm-brown); text-decoration:none;">{{ req.email }}</a>
+                    </div>
+                </div>
+                {% endif %}
+ 
+                {% if req.book %}
+                <div>
+                    <span class="req-book-tag">📚 {{ req.book.title }}</span>
+                </div>
+                {% endif %}
+ 
+                {% if req.message %}
+                <div class="req-message">{{ req.message }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+ 
+        {% else %}
+        <div class="empty-requests">
+            <div class="empty-icon">📭</div>
+            <h3>Заявок пока нет</h3>
+            <p>Когда клиенты оставят заявки, они появятся здесь</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

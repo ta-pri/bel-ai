@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% block title %}Вход — КниГа{% endblock %}
+ 
+{% block extra_styles %}
+<style>
+.login-page {
+    min-height: calc(100vh - 130px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    background: var(--cream);
+}
+ 
+.login-card {
+    background: var(--white);
+    border-radius: 16px;
+    padding: 50px 44px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 20px 60px rgba(107,76,42,0.12);
+    border: 1px solid var(--border);
+}
+ 
+.login-logo {
+    text-align: center;
+    margin-bottom: 32px;
+}
+ 
+.login-logo .logo-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--dark);
+}
+ 
+.login-logo .logo-text span { color: var(--gold); font-style: italic; }
+ 
+.login-logo p {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-top: 6px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+ 
+.login-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    color: var(--dark);
+    margin-bottom: 6px;
+}
+ 
+.login-subtitle {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 28px;
+}
+ 
+.error-msg {
+    background: rgba(192,57,43,0.08);
+    border: 1px solid rgba(192,57,43,0.25);
+    border-left: 3px solid #C0392B;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: #C0392B;
+    margin-bottom: 20px;
+}
+ 
+.login-btn {
+    width: 100%;
+    padding: 13px;
+    background: var(--dark);
+    color: var(--white);
+    border: none;
+    border-radius: 8px;
+    font-family: 'Mulish', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: all 0.25s;
+}
+.login-btn:hover {
+    background: var(--warm-brown);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(26,18,8,0.25);
+}
+ 
+.login-footer {
+    text-align: center;
+    margin-top: 24px;
+    font-size: 0.83rem;
+    color: var(--text-muted);
+}
+ 
+.login-footer a { color: var(--gold); text-decoration: none; }
+.login-footer a:hover { text-decoration: underline; }
+</style>
+{% endblock %}
+ 
+{% block content %}
+<div class="login-page">
+    <div class="login-card">
+        <div class="login-logo">
+            <div class="logo-text">Кни«<span>Г</span>»а</div>
+            <p>Панель администратора</p>
+        </div>
+ 
+        <h2 class="login-title">Добро пожаловать</h2>
+        <p class="login-subtitle">Войдите в аккаунт для управления магазином</p>
+ 
+        {% if error %}
+        <div class="error-msg">{{ error }}</div>
+        {% endif %}
+ 
+        <form method="POST">
+            <div class="form-group">
+                <label>Логин</label>
+                <input type="text" name="login" placeholder="Введите логин" required autocomplete="username">
+            </div>
+            <div class="form-group">
+                <label>Пароль</label>
+                <input type="password" name="password" placeholder="Введите пароль" required autocomplete="current-password">
+            </div>
+            <button type="submit" class="login-btn">Войти в панель</button>
+        </form>
+ 
+        <div class="login-footer">
+            <a href="/">← Вернуться в каталог</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+ 

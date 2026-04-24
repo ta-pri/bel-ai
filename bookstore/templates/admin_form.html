@@ -1,0 +1,396 @@
+{% extends 'base.html' %}
+{% block title %}{% if action == 'add' %}Добавить книгу{% else %}Редактировать книгу{% endif %} — КниГа{% endblock %}
+ 
+{% block extra_styles %}
+<style>
+.admin-header {
+    background: var(--dark);
+    padding: 30px 50px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid var(--gold);
+}
+.admin-header h1 { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: var(--white); }
+ 
+.admin-layout { display: flex; min-height: calc(100vh - 160px); }
+ 
+.admin-nav {
+    width: 220px; background: var(--white);
+    border-right: 1px solid var(--border); padding: 24px 0;
+}
+.admin-nav a {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 24px; color: var(--text); text-decoration: none;
+    font-size: 0.88rem; font-weight: 500; transition: all 0.2s;
+    border-left: 3px solid transparent;
+}
+.admin-nav a:hover, .admin-nav a.active {
+    background: var(--cream); color: var(--warm-brown); border-left-color: var(--gold);
+}
+.admin-nav a.active { font-weight: 700; }
+ 
+.form-page { flex: 1; padding: 40px; background: var(--cream); }
+ 
+.form-card {
+    background: var(--white);
+    border-radius: 14px;
+    padding: 40px;
+    max-width: 760px;
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 20px rgba(107,76,42,0.07);
+}
+ 
+.form-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    color: var(--dark);
+    margin-bottom: 6px;
+}
+ 
+.form-subtitle {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 32px;
+}
+ 
+.form-divider {
+    height: 1px; background: var(--border);
+    margin: 28px 0;
+}
+ 
+.section-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 18px;
+}
+ 
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+ 
+.form-row-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 18px;
+}
+ 
+.form-group { margin-bottom: 18px; }
+.form-group label {
+    display: block; font-size: 0.78rem; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--text-muted); margin-bottom: 7px;
+}
+ 
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%; padding: 11px 14px;
+    border: 1.5px solid var(--border); border-radius: 8px;
+    font-family: 'Mulish', sans-serif; font-size: 0.9rem;
+    background: var(--cream); color: var(--text);
+    outline: none; transition: border-color 0.2s;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: var(--gold); background: var(--white);
+}
+.form-group textarea { resize: vertical; min-height: 100px; }
+ 
+/* ── COVER UPLOAD ── */
+.cover-upload-area {
+    border: 2px dashed var(--border);
+    border-radius: 10px;
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s;
+    background: var(--cream);
+}
+ 
+.cover-upload-area:hover, .cover-upload-area.drag-over {
+    border-color: var(--gold);
+    background: rgba(201,153,74,0.05);
+}
+ 
+.cover-upload-area input[type="file"] { display: none; }
+ 
+.cover-preview-img {
+    width: 120px; height: 170px;
+    object-fit: cover; border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(107,76,42,0.2);
+    margin-bottom: 12px;
+}
+ 
+.upload-icon { font-size: 2.5rem; margin-bottom: 8px; opacity: 0.5; }
+.upload-text { font-size: 0.85rem; color: var(--text-muted); }
+.upload-text strong { color: var(--gold); }
+ 
+/* ── TOGGLES ── */
+.toggle-group {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+ 
+.toggle-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 18px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px; cursor: pointer;
+    transition: all 0.2s; background: var(--cream);
+    font-size: 0.88rem; font-weight: 500;
+}
+ 
+.toggle-item input[type="checkbox"] { display: none; }
+ 
+.toggle-item.checked {
+    border-color: var(--gold);
+    background: rgba(201,153,74,0.1);
+    color: var(--warm-brown);
+}
+ 
+.toggle-dot {
+    width: 18px; height: 18px;
+    border-radius: 4px;
+    border: 2px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s; font-size: 0.75rem; color: transparent;
+}
+ 
+.toggle-item.checked .toggle-dot {
+    background: var(--gold); border-color: var(--gold); color: white;
+}
+ 
+/* ── SALE EXTRA ── */
+#sale-extra {
+    display: none;
+    margin-top: 14px;
+    padding: 14px 18px;
+    background: rgba(196,133,106,0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(196,133,106,0.2);
+}
+ 
+/* ── FORM ACTIONS ── */
+.form-actions {
+    display: flex; gap: 12px; align-items: center; margin-top: 32px; padding-top: 24px;
+    border-top: 1px solid var(--border);
+}
+</style>
+{% endblock %}
+ 
+{% block content %}
+<div class="admin-header">
+    <div>
+        <h1>{% if action == 'add' %}Добавить книгу{% else %}Редактировать книгу{% endif %}</h1>
+    </div>
+    <div>
+        <a href="/admin" class="btn btn-outline" style="font-size:0.8rem; padding:8px 18px;">← К списку</a>
+    </div>
+</div>
+ 
+<div class="admin-layout">
+    <nav class="admin-nav">
+        <a href="/admin"><span>📚</span> Книги</a>
+        <a href="/admin/add" {% if action == 'add' %}class="active"{% endif %}><span>➕</span> Добавить</a>
+        <a href="/admin/requests"><span>📩</span> Заявки</a>
+    </nav>
+ 
+    <div class="form-page">
+        <div class="form-card">
+            <div class="form-title">{% if action == 'add' %}Новая книга{% else %}Редактирование{% endif %}</div>
+            <div class="form-subtitle">
+                {% if action == 'add' %}Заполните информацию о книге{% else %}Измените данные книги «{{ book.title }}»{% endif %}
+            </div>
+ 
+            <form method="POST" enctype="multipart/form-data">
+                <!-- ОСНОВНАЯ ИНФОРМАЦИЯ -->
+                <div class="section-title">Основная информация</div>
+ 
+                <div class="form-group">
+                    <label>Название книги *</label>
+                    <input type="text" name="title" placeholder="Введите название"
+                           value="{{ book.title if book else '' }}" required>
+                </div>
+ 
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Автор *</label>
+                        <input type="text" name="author" placeholder="Имя автора"
+                               value="{{ book.author if book else '' }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Издательство *</label>
+                        <input type="text" name="publisher" placeholder="Название издательства"
+                               value="{{ book.publisher if book else '' }}" required>
+                    </div>
+                </div>
+ 
+                <div class="form-row-3">
+                    <div class="form-group">
+                        <label>Год издания</label>
+                        <input type="number" name="year" placeholder="2024" min="1000" max="2099"
+                               value="{{ book.year if book else '2024' }}">
+                    </div>
+                    <div class="form-group">
+                        <label>Страниц *</label>
+                        <input type="number" name="pages" placeholder="320" min="1"
+                               value="{{ book.pages if book else '' }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Цена, ₽</label>
+                        <input type="number" name="price" placeholder="490" min="0" step="1"
+                               value="{{ book.price | int if book else '' }}">
+                    </div>
+                </div>
+ 
+                <div class="form-group">
+                    <label>Жанр</label>
+                    <input type="text" name="genre" list="genre-list" placeholder="Классика, Фантастика..."
+                           value="{{ book.genre if book else '' }}">
+                    <datalist id="genre-list">
+                        <option value="Классика">
+                        <option value="Фантастика">
+                        <option value="Детектив">
+                        <option value="Роман">
+                        <option value="Поэзия">
+                        <option value="Детская литература">
+                        <option value="История">
+                        <option value="Философия">
+                    </datalist>
+                </div>
+ 
+                <div class="form-group">
+                    <label>Описание</label>
+                    <textarea name="description" placeholder="Краткое описание книги...">{{ book.description if book else '' }}</textarea>
+                </div>
+ 
+                <div class="form-divider"></div>
+ 
+                <!-- ОБЛОЖКА -->
+                <div class="section-title">Обложка книги</div>
+ 
+                <div class="cover-upload-area" onclick="document.getElementById('cover-input').click()">
+                    {% if book and book.cover_url %}
+                        <img class="cover-preview-img" id="cover-preview"
+                             src="{{ book.cover_url }}" alt="Обложка"
+                             onerror="this.style.display='none'">
+                    {% else %}
+                        <img class="cover-preview-img" id="cover-preview" src="" alt="" style="display:none;">
+                    {% endif %}
+                    <div class="upload-icon" id="upload-icon" {% if book and book.cover_url %}style="display:none"{% endif %}>📷</div>
+                    <div class="upload-text">
+                        <strong>Нажмите для выбора</strong> или перетащите файл<br>
+                        <small>JPG, PNG, WEBP — до 10 МБ</small>
+                    </div>
+                    <input type="file" id="cover-input" name="cover" accept="image/*"
+                           onchange="previewCover(this)">
+                </div>
+ 
+                <div class="form-divider"></div>
+ 
+                <!-- МЕТКИ -->
+                <div class="section-title">Категории и метки</div>
+ 
+                <div class="toggle-group" id="toggles">
+                    <label class="toggle-item {% if book and book.is_new %}checked{% endif %}"
+                           onclick="toggleCheck(this)">
+                        <input type="checkbox" name="is_new" {% if book and book.is_new %}checked{% endif %}>
+                        <div class="toggle-dot">✓</div>
+                        ✨ Новинка
+                    </label>
+ 
+                    <label class="toggle-item {% if book and book.is_sale %}checked{% endif %}"
+                           id="sale-toggle" onclick="toggleCheck(this); toggleSaleExtra()">
+                        <input type="checkbox" name="is_sale" {% if book and book.is_sale %}checked{% endif %}>
+                        <div class="toggle-dot">✓</div>
+                        🏷️ Скидка
+                    </label>
+ 
+                    <label class="toggle-item {% if book and book.is_seasonal %}checked{% endif %}"
+                           onclick="toggleCheck(this)">
+                        <input type="checkbox" name="is_seasonal" {% if book and book.is_seasonal %}checked{% endif %}>
+                        <div class="toggle-dot">✓</div>
+                        📖 Сезонная подборка
+                    </label>
+                </div>
+ 
+                <div id="sale-extra" {% if book and book.is_sale %}style="display:block"{% endif %}>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label>Размер скидки, %</label>
+                        <input type="number" name="sale_percent" min="1" max="99"
+                               placeholder="Например: 20"
+                               value="{{ book.sale_percent if book else '' }}"
+                               style="max-width:160px;">
+                    </div>
+                </div>
+ 
+                <!-- ACTIONS -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        {% if action == 'add' %}Добавить книгу{% else %}Сохранить изменения{% endif %}
+                    </button>
+                    <a href="/admin" class="btn btn-outline">Отмена</a>
+                    {% if action == 'edit' %}
+                    <form method="POST" action="/admin/delete/{{ book.id }}" style="margin:0 0 0 auto;"
+                          onsubmit="return confirm('Удалить книгу?')">
+                        <button type="submit" class="btn btn-danger">Удалить книгу</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+ 
+{% block extra_scripts %}
+<script>
+function previewCover(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            const img = document.getElementById('cover-preview');
+            img.src = e.target.result;
+            img.style.display = 'block';
+            document.getElementById('upload-icon').style.display = 'none';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+ 
+function toggleCheck(label) {
+    const cb = label.querySelector('input[type="checkbox"]');
+    cb.checked = !cb.checked;
+    label.classList.toggle('checked', cb.checked);
+}
+ 
+function toggleSaleExtra() {
+    const cb = document.querySelector('#sale-toggle input');
+    document.getElementById('sale-extra').style.display = cb.checked ? 'block' : 'none';
+}
+ 
+// Drag & drop
+const area = document.querySelector('.cover-upload-area');
+area.addEventListener('dragover', e => { e.preventDefault(); area.classList.add('drag-over'); });
+area.addEventListener('dragleave', () => area.classList.remove('drag-over'));
+area.addEventListener('drop', e => {
+    e.preventDefault(); area.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+        const dt = new DataTransfer(); dt.items.add(file);
+        const input = document.getElementById('cover-input');
+        input.files = dt.files;
+        previewCover(input);
+    }
+});
+</script>
+{% endblock %}
+ 
